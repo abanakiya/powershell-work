@@ -1,3 +1,4 @@
+# TO BE IMPROVED
 # NO ERROR HANDLING, TO EVALUATE IF NEEDED
 
 function getUser ($objUser) {
