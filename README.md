@@ -3,7 +3,7 @@
 
 # INSTALLED:
   AD Tools;
-  SCSM 2016
+  SCSM 2012, U2016
 
 # MODULES / CONNECTIONS:
   module: activedirectory;
