@@ -9,4 +9,4 @@
   module: activedirectory;
   module: scsm ('C:\Program Files\Microsoft System Center 2012 R2\Service Manager\PowerShell\System.Center.Service.Manager.psd1');
   module: smlets (https://smlets.codeplex.com/);
-  connection: <scsm server name> ("New-SCManagementGroupConnection -ComputerName '<scsm server name>'");
+  connection: <scsm server name> ("New-SCManagementGroupConnection -ComputerName '<scsm server name>'")
