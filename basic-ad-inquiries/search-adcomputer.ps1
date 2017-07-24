@@ -51,7 +51,7 @@ function get_details($computer) {
     Write-Host "$c_object.distinguishedname, $c_object.enabled"
     # ADD OTHER FIELDS AS NEEDED: https://msdn.microsoft.com/en-us/library/aa394102(v=vs.85).aspx
 
-    if (($c_object.enabled) -eq "True") {
+    if (($c_object.enabled) -eq "enabled") {
         try {
             Write-Host "IP Information:" 
             Resolve-DnsName $strCname
