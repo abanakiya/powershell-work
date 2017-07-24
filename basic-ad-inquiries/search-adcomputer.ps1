@@ -45,13 +45,17 @@ function test3389 ($strHost){
 function get_details($computer) {
     $c_object = $computer
     $strCname = $computer.name
+    $strEnabled = Get-ADComputer ($c_object.name) | select enabled
+    $strEnabled = ($strEnabled -replace "`n | `r").Substring(10)
+    $strEnabled = $strEnabled.Substring(0, ($strEnabled.Length-1))
+    if ($strEnabled -eq "True") { $strEnabled = "Enabled" } else { $strEnabled = "Disabled" }
 
     Write-Host -ForegroundColor yellow "+ COMPUTER FOUND: ---------------------------------------------------------------"
     Write-Host "Computer Full AD Name:"
-    Write-Host "$c_object.distinguishedname, $c_object.enabled"
+    Write-Host "$c_object.distinguishedname, Status = $strEnabled"
     # ADD OTHER FIELDS AS NEEDED: https://msdn.microsoft.com/en-us/library/aa394102(v=vs.85).aspx
 
-    if (($c_object.enabled) -eq "enabled") {
+    if (($strEnabled) -eq "Enabled") {
         try {
             Write-Host "IP Information:" 
             Resolve-DnsName $strCname
