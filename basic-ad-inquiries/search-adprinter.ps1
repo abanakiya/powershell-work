@@ -1,11 +1,11 @@
-# TO BE IMPROVED
+# LAST MODIFIED: PG20170711
 # RE-WRITE USING GET-ADOBJECT INSTEAD OF GET-PRINTER
 
 
 $ErrorActionPreference = "SilentlyContinue"
 
 function formOutput ($objPrinter) {
-#GET STATUS
+# GET PRINTER STATUS
     $strSrv = $objPrinter.shortservername
     $strPname = $objPrinter.printername
     $strStat = (Get-printer -ComputerName $strSrv | where{$_.name -like "*$strPName*" -and $_.DeviceType -eq "Print"}).PrinterStatus
@@ -23,7 +23,7 @@ function formOutput ($objPrinter) {
     Write-Host "Stapler    :"$objPrinter.printstaplingsupported
     Write-Host "Print Queue:"
     Get-PrintJob -ComputerName $strSrv $strPname | ft ID, UserName, SubmittedTime, JobStatus, Size, TotalPages, DocumentName
-    Write-Host "-------------------------------------------------------------------------------------------------"
+    "-" * 80
 }
 
 $strSearch = Read-Host -Prompt "Searching All Printers.. Enter printer or room number#"
@@ -39,21 +39,19 @@ catch {
 }
 finally{}
 
-#FORMATTED OUTPUT:
+# FORMATTED OUTPUT:
 Write-Host -ForegroundColor Green "--------- SEARCH RESULT ---------"
 
-if ($dcPrinters.Count -ge 1) {
-    for ($i=0; $i -lt $dcPrinters.length; $i++) {
-        formoutput($dcPrinters[$i])
-    }
-
-    Write-Host "Total number of printer(s) found:"$dcPrinters.Count
-}
-else {
-    if (($dcPrinters.name).length -ne 0) { 
+switch (@($dcPrinters).Count) {
+    0 { Write-Host -ForegroundColor Magenta "No printer found"}
+    1 { 
         formOutput($dcPrinters)
         Write-Host "Total number of printer(s) found: 1"
     }
-    else { Write-Host -ForegroundColor Magenta "No printer found"}
+    default {
+        for ($i=0; $i -lt $dcPrinters.length; $i++) {
+        formoutput($dcPrinters[$i])
+        }
+        Write-Host "Total number of printer(s) found:"$dcPrinters.Count
+    }
 }
-
