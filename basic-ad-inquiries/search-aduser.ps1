@@ -40,7 +40,7 @@ function getUser ($objUser) {
 
     #if ($strUStatus -eq "Enabled") { Write-Host "$strUID, $strUName, $strUType, $strUStatus - (Employee Only): $strUEID - $strUtitle - $strUTel" }
     #else { Write-Host -ForegroundColor Gray "$strUID, $strUName, $strUType, $strUStatus - (Employee Only): $strUEID - $strUtitle - $strUTel" }
-    Write-Host "----------------------------------------------------------------------------------"
+    "-" * 50
 }
 
 $strSearch = Read-Host -Prompt "Search User"
@@ -49,8 +49,6 @@ Write-Host -ForegroundColor Green "Displaying AD Users with Name containing $str
 $strSearch="*$strSearch*"
     
 $aryUsers = Get-ADObject -Filter {((displayname -like $strSearch) -or (name -like $strSearch)) -and (ObjectClass -eq "user")} -Properties * | Sort-Object employeetype, displayname
-
-#$strUCount = $aryUsers.Count
 
 switch (@($aryUsers).Count) {
     0 { Write-Host -ForegroundColor Yellow "No user found." }
@@ -61,7 +59,7 @@ switch (@($aryUsers).Count) {
     default {
         for ($i=0; $i -lt ($aryUsers.count); $i++) {
         getUser( $aryUsers[$i])
-    }
-    #Write-Host -ForegroundColor Yellow "Total user(s) found: $strUCount"
+        }
     }
 }
+Write-Host -ForegroundColor Green "Total user(s) found:" $aryUsers.count
