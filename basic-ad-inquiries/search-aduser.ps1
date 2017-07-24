@@ -1,6 +1,3 @@
-# TO BE IMPROVED
-# NO ERROR HANDLING, TO EVALUATE IF NEEDED
-
 function getUser ($objUser) {
     $strUID = $objUser.cn
     $strUName = $objUser.displayname
@@ -53,17 +50,18 @@ $strSearch="*$strSearch*"
     
 $aryUsers = Get-ADObject -Filter {((displayname -like $strSearch) -or (name -like $strSearch)) -and (ObjectClass -eq "user")} -Properties * | Sort-Object employeetype, displayname
 
-$strUCount = $aryUsers.Count
-if ($strUCount -gt 1) {  #found multiple users
-    for ($i=0; $i -lt ($aryUsers.count); $i++) {
-        getUser( $aryUsers[$i])
-    }
-    Write-Host -ForegroundColor Yellow "Total user(s) found: $strUCount"
-}
-else { 
-    if (($aryUsers.DisplayName).Length -eq 0) { Write-Host -ForegroundColor Yellow "No user found." }
-    else {
+#$strUCount = $aryUsers.Count
+
+switch (@($aryUsers).Count) {
+    0 { Write-Host -ForegroundColor Yellow "No user found." }
+    1 {
         getUser($aryUsers)
         Write-Host -ForegroundColor Yellow "Total user(s) found: 1"
+    }
+    default {
+        for ($i=0; $i -lt ($aryUsers.count); $i++) {
+        getUser( $aryUsers[$i])
+    }
+    #Write-Host -ForegroundColor Yellow "Total user(s) found: $strUCount"
     }
 }
