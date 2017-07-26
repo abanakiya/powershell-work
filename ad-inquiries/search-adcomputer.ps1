@@ -71,7 +71,7 @@ function get_details($computer) {
         try { 
             Write-Host -ForegroundColor Green "Connection(s) available."
             gwmi win32_computersystem -ComputerName $strCname | select username, model, totalphysicalmemory
-            Get-WmiObject -Class "win32_networkadapterconfiguration" -ComputerName $strCname | where{ ($_.IPaddress).length -gt 0 } | ft index, servicename, dhcpenabled, IPaddress, macaddress
+            gwmi win32_networkadapterconfiguration -ComputerName $strCname | where{ ($_.IPaddress).length -gt 0 } | ft index, servicename, dhcpenabled, IPaddress, macaddress
         }
         catch { Write-Host -ForegroundColor DarkRed "`nNo access to additional information (error occured)." }
         finally {}
