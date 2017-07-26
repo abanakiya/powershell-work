@@ -53,7 +53,6 @@ function get_details($computer) {
     Write-Host -ForegroundColor yellow "+ COMPUTER FOUND: ---------------------------------------------------------------"
     Write-Host "Computer Full AD Name:"
     Write-Host "$c_object.distinguishedname, Status = $strEnabled"
-    # ADD OTHER FIELDS AS NEEDED: https://msdn.microsoft.com/en-us/library/aa394102(v=vs.85).aspx
 
     if (($strEnabled) -eq "Enabled") {
         try {
@@ -72,6 +71,9 @@ function get_details($computer) {
             Write-Host -ForegroundColor Green "Connection(s) available."
             gwmi win32_computersystem -ComputerName $strCname | select username, model, totalphysicalmemory
             gwmi win32_networkadapterconfiguration -ComputerName $strCname | where{ ($_.IPaddress).length -gt 0 } | ft index, servicename, dhcpenabled, IPaddress, macaddress
+            gwmi win32_mappedlogicaldisk -ComputerName $strCname | ft name, providername
+            # REF-WIN32 CLASSES: https://msdn.microsoft.com/en-us/library/aa394084(v=vs.85).aspx
+            # REF-WMI CLASSES: https://msdn.microsoft.com/en-us/library/aa394554(v=vs.85).aspx
         }
         catch { Write-Host -ForegroundColor DarkRed "`nNo access to additional information (error occured)." }
         finally {}
