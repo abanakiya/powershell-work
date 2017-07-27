@@ -49,7 +49,7 @@ function get_details($computer) {
     $strCname = $computer.name
     $strEnabled = Get-ADComputer ($computer.name) | select enabled
 
-    Write-Host -ForegroundColor yellow "+ COMPUTER FOUND: ---"$computer.name"------------------------------------------------------------"
+    Write-Host -ForegroundColor yellow "+ COMPUTER FOUND: ------"$computer.name"------------------------------------------------------------"
     Write-Host "Computer Full AD Name:" $computer.distinguishedname
     write-host "Enabled                :"$strEnabled.enabled
 
@@ -103,24 +103,18 @@ catch {
 }
 finally{}
 
-switch (@($computers).Count) {
+$intComputers = @($computers).Count
+
+switch ($intComputers) {
     0 {
         Write-Host -ForegroundColor DarkMagenta "No computer found. Terminating..."
-        pause
-        exit
     }
-    1 { 
-        get_details($computers) 
-        Write-Host -ForegroundColor Yellow "-------------------------- SEARCH COMPLETE, PRESS ENTRE TO EXIT +"
-        pause
-        exit
-    }
+    1 { get_details($computers) }
     default {
-        for ($i=0; $i -lt $computers.Length; $i++) {
-            get_details($computers[$i])
-        }
-        Write-Host -ForegroundColor Yellow "-------------------------- SEARCH COMPLETE, PRESS ENTRE TO EXIT +"
-        pause
-        exit
+        for ($i=0; $i -lt $computers.Length; $i++) { get_details($computers[$i]) }
     }
 }
+
+Write-Host -ForegroundColor Yellow "------ SEARCH COMPLETED, $intComputers COMPUTER(S) FOUND."
+pause
+exit
