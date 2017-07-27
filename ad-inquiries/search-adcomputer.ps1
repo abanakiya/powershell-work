@@ -2,6 +2,9 @@
 # WILL LEAVE FOOTPRINT IN EV FROM TEST3389 - ?
 # FIX AT SOME POINT TO AVOID USING WRITE-HOST..
 
+# NOTE (20170727): WORK COMPUTER IMAGE BY DEFAULT ONLY HAS 3389 OPEN
+#   REST OF THE PORTS ARE OPENED BY SERVER SIDE SETTINGS
+
 $ErrorActionPreference = "Stop"
 
 clear
@@ -43,46 +46,52 @@ function test3389 ($strHost){
 }
 
 function get_details($computer) {
-    $c_object = $computer
     $strCname = $computer.name
-    $strEnabled = Get-ADComputer ($c_object.name) | select enabled
-    $strEnabled = ($strEnabled -replace "`n | `r").Substring(10)
-    $strEnabled = $strEnabled.Substring(0, ($strEnabled.Length-1))
-    if ($strEnabled -eq "True") { $strEnabled = "Enabled" } else { $strEnabled = "Disabled" }
+    $strEnabled = Get-ADComputer ($computer.name) | select enabled
 
-    Write-Host -ForegroundColor yellow "+ COMPUTER FOUND: ---------------------------------------------------------------"
-    Write-Host "Computer Full AD Name:"
-    Write-Host "$c_object.distinguishedname, Status = $strEnabled"
+    Write-Host -ForegroundColor yellow "+ COMPUTER FOUND: ---"$computer.name"------------------------------------------------------------"
+    Write-Host "Computer Full AD Name:" $computer.distinguishedname
+    write-host "Enabled                :"$strEnabled.enabled
 
-    if (($strEnabled) -eq "Enabled") {
+    try {
+        $strIP = Resolve-DnsName $strCname | select ipaddress
+        Write-Host "IP Address             :"$strIP.IPAddress
+    }
+    catch {
+        Write-Host -ForegroundColor DarkMagenta "Cannot Resolve IP Address"
+    }
+    finally {}
+
+    $strCon3389 = test3389($strCname)
+    if ($strCon3389 -contains "True") {
+        Write-Host -ForegroundColor DarkGreen "Connection 3389 available."
         try {
-            Write-Host "IP Information:" 
-            Resolve-DnsName $strCname
-        }
-        catch {
-            Write-Host -ForegroundColor DarkMagenta "Cannot Resolve IP Address"
-        }
-        finally {}
-    }
-    else { Write-Host -ForegroundColor DarkMagenta "Cannot Resolve IP Address" }
-    
-    if ((test3389($strCname)) -like "True") {  # OR -CONTAINS
-        try { 
-            Write-Host -ForegroundColor Green "Connection(s) available."
-            gwmi win32_computersystem -ComputerName $strCname | select username, model, totalphysicalmemory
-            gwmi win32_networkadapterconfiguration -ComputerName $strCname | where{ ($_.IPaddress).length -gt 0 } | ft index, servicename, dhcpenabled, IPaddress, macaddress
-            gwmi win32_mappedlogicaldisk -ComputerName $strCname | ft name, providername
+            $aryCS = Get-WmiObject -class win32_computersystem -ComputerName $strCname | select username, model, totalphysicalmemory
+            $aryNW = Get-WmiObject -class win32_networkadapterconfiguration -ComputerName $strCname | where{ ($_.IPaddress).length -gt 0 } | select index, servicename, dhcpenabled, IPaddress, macaddress
+            $aryDR = Get-WmiObject -class win32_mappedlogicaldisk -ComputerName $strCname | select name, providername
+            Write-Host "Computer Model         :" $aryCS.model
+            Write-Host "Memory Size            :" $aryCS.totalphysicalmemory
+            Write-Host "Current User           :" $aryCS.username
+            Write-Host "Network Adapter(s)     :" $aryNW.servicename
+            write-host "Adapter IP(s)          :" $aryNW.ipaddress
+            Write-Host "Adapter MAC Address(es):" $aryNW.macaddress
+            Write-Host "Mapped Drives          :" $aryDR
+
+            #Get-WmiObject -class win32_computersystem -ComputerName $strCname | select username, model, totalphysicalmemory
+            #Get-WmiObject -class win32_networkadapterconfiguration -ComputerName $strCname | where{ ($_.IPaddress).length -gt 0 } | select index, servicename, dhcpenabled, IPaddress, macaddress
+            #Get-WmiObject -class win32_mappedlogicaldisk -ComputerName $strCname | select name, providername
             # REF-WIN32 CLASSES: https://msdn.microsoft.com/en-us/library/aa394084(v=vs.85).aspx
-            # REF-WMI CLASSES: https://msdn.microsoft.com/en-us/library/aa394554(v=vs.85).aspx
+            # REF-WMI CLASSES: https://msdn.microsoft.com/en-us/library/aa394554(v=vs.85).aspx        
         }
-        catch { Write-Host -ForegroundColor DarkRed "`nNo access to additional information (error occured)." }
+        catch { Write-Host -ForegroundColor DarkMagenta "Cannot get additional information" }
         finally {}
     }
-    else { Write-Host -ForegroundColor Magenta "`nCannot establish connection to the computer" }
+    else { 
+        Write-Host -ForegroundColor Magenta "`nCannot establish connection to the computer" 
+    }
 }
 
 # --- MAIN ------
-
 $computername = Read-Host -Prompt "Enter B# or Room# get"
 $computername = "*$computername*"
 try { $computers = Get-ADObject -Filter {(name -like $computername) -and (ObjectClass -eq "computer")} | Sort name }
